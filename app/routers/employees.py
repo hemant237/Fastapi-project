@@ -5,6 +5,9 @@ from app.models.employee import Employee
 from app.models.department import Department
 from app.schemas.employee import EmployeeRequest, EmployeeResponse ,EmployeeUpdate
 
+from app.core.security import get_current_user , require_admin
+from app.models.user import User
+
 router=APIRouter()
 
 @router.post("/employees",response_model=EmployeeResponse,
@@ -12,7 +15,8 @@ router=APIRouter()
 
 def create_employee(
     employee : EmployeeRequest,
-    db : Session = Depends(get_db)
+    db : Session = Depends(get_db),
+    current_user : User = Depends(require_admin)
 ):
 
     department = db.get(Department,employee.department_id)
@@ -35,7 +39,8 @@ def create_employee(
 
 @router.get("/employees/",response_model=list[EmployeeResponse])
 def get_employees(
-    db : Session =Depends(get_db)
+    db : Session =Depends(get_db),
+    current_user : User = Depends(get_current_user)
 ):
     employees=db.query(Employee).all()
 
@@ -91,7 +96,8 @@ def update_employee(
 @router.delete("/employees/{employee_id}")
 def delete_employee(
     employee_id : int,
-    db : Session = Depends(get_db)
+    db : Session = Depends(get_db),
+    current_user : User = Depends(require_admin)
 ):
     employee = db.get(Employee,employee_id)
 

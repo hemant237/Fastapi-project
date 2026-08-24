@@ -1,4 +1,4 @@
-from fastapi import Depends , HTTPException
+from fastapi import Depends , HTTPException ,status
 from fastapi.security import HTTPBearer , HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -14,13 +14,12 @@ from pwdlib import PasswordHash
 from datetime import datetime , timedelta , timezone
 
 
-load_dotenv()
+loaded = load_dotenv()
 
 password_hash = PasswordHash.recommended()
 
-JWT_SECRET_KEY=os.getenv("JWT_SECERET_KEY")
-JWT_ALGORITHM="HS256"
-
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+JWT_ALGORITHM = "HS256"
 bearer_scheme=HTTPBearer()
 
 def hash_password(password: str) -> str:
@@ -40,6 +39,7 @@ def create_access_token(user_id : int) -> str:
     expire = datetime.now(timezone.utc) + timedelta(minutes=30)
     payload = {
         "sub": str(user_id),
+        "type" : "access",
         "exp": expire
     }
 
@@ -65,8 +65,10 @@ def get_current_user(
         )
 
         user_id = payload.get("sub")
+        token_type=payload.get("type")
 
-        if user_id is None:
+
+        if user_id is None or token_type != "access":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail = "Invalid token"
@@ -87,3 +89,34 @@ def get_current_user(
         )
 
     return user
+
+
+def require_admin(
+        current_user : User = Depends(get_current_user)
+):
+    if current_user.role != 'admin':
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='Admin Access Required'
+        )
+
+    return current_user
+
+
+def create_refresh_token (user_id : int) ->str:
+    expire =datetime.now(timezone.utc) + timedelta(days=7)
+
+    payload = {
+        "sub" : str(user_id),
+        "type" : "refresh",
+        "exp" : expire
+    }
+
+    token=jwt.encode(
+        payload,
+        JWT_SECRET_KEY,
+        algorithm=JWT_ALGORITHM
+    )
+    return token
+
+
