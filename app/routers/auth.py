@@ -1,14 +1,16 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends , status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.schemas.auth import RegisterRequest, UserResponse ,LoginRequest
+from app.schemas.auth import RegisterRequest, UserResponse ,LoginRequest , RefreshTokenRequest
 
 from app.models.user import User
 from fastapi import HTTPException
 
 from app.core.security import (verify_password , hash_password , create_access_token , get_current_user ,
-                                require_admin , create_refresh_token)
+                                require_admin , create_refresh_token, JWT_SECRET_KEY,JWT_ALGORITHM)
+
+import jwt
 
 
 router = APIRouter(
@@ -100,4 +102,47 @@ def admin_test(
         "user" : current_user.email,
         "role" : current_user.role
     }
-    
+
+
+@router.post("/refresh")
+def refresh_access_token(
+    request : RefreshTokenRequest,
+    db : Session = Depends(get_db)
+):
+    try:
+        payload=jwt.decode(
+            request.refresh_token,
+            JWT_SECRET_KEY,
+            algorithms=[JWT_ALGORITHM]
+        )
+
+        user_id=payload.get("sub")
+        token_type=payload.get("type")
+
+        if user_id is None or token_type != "refresh":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid Refresh Token"
+            )
+
+    except jwt.InvalidTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Refresh Token"
+        )
+
+    user=db.get(User,int(user_id))
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User Not found"
+        )
+
+    new_access_token=create_access_token(user.id)
+
+    return {
+        "access token":new_access_token,
+        "type": "bearer"
+    }
+
