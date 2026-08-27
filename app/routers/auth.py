@@ -8,7 +8,12 @@ from app.models.user import User
 from fastapi import HTTPException
 
 from app.core.security import (verify_password , hash_password , create_access_token , get_current_user ,
-                                require_admin , create_refresh_token, JWT_SECRET_KEY,JWT_ALGORITHM)
+                                require_admin , create_refresh_token, JWT_SECRET_KEY,JWT_ALGORITHM , hash_refresh_token,
+                                verify_refresh_token , get_refresh_token_record)
+
+from app.models.refresh_token import RefreshToken
+
+from datetime import datetime , timedelta , timezone
 
 import jwt
 
@@ -34,7 +39,7 @@ def register(
 
     if existing_user:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_409_CONFLICT,
             detail="Email already Registered"
         )
     hashed_password=hash_password(user.password)
@@ -78,6 +83,16 @@ def login(
     access_token = create_access_token(existing_user.id)
     refresh_token = create_refresh_token(existing_user.id)
 
+    refresh_token_record=RefreshToken(
+        user_id=existing_user.id,
+        token_hash=hash_refresh_token(refresh_token),
+        expires_at=datetime.now(timezone.utc)+timedelta(days=7),
+        revoked=False
+    )
+
+    db.add(refresh_token_record)
+    db.commit()
+
     return {
         "access_token" : access_token,
         "refresh_token" : refresh_token,
@@ -89,8 +104,8 @@ def get_me(
     current_user : User = Depends(get_current_user)
 ):
     return {
-        "id :" : current_user.id,
-        "email :": current_user.email
+        "id" : current_user.id,
+        "email": current_user.email
     }
 
 @router.get("/admin_test")
@@ -109,40 +124,38 @@ def refresh_access_token(
     request : RefreshTokenRequest,
     db : Session = Depends(get_db)
 ):
-    try:
-        payload=jwt.decode(
-            request.refresh_token,
-            JWT_SECRET_KEY,
-            algorithms=[JWT_ALGORITHM]
-        )
+    refresh_token_record=get_refresh_token_record(
+        request.refresh_token,
+        db
+    )             
 
-        user_id=payload.get("sub")
-        token_type=payload.get("type")
-
-        if user_id is None or token_type != "refresh":
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid Refresh Token"
-            )
-
-    except jwt.InvalidTokenError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Refresh Token"
-        )
-
-    user=db.get(User,int(user_id))
-
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User Not found"
-        )
-
-    new_access_token=create_access_token(user.id)
+    new_access_token=create_access_token(refresh_token_record.user_id)
 
     return {
-        "access token":new_access_token,
-        "type": "bearer"
+        "access_token":new_access_token,
+        "token_type": "bearer"
     }
+
+
+@router.post("/logout")
+def logout(
+    request : RefreshTokenRequest,
+    db : Session = Depends(get_db)
+):
+   refresh_token_record=get_refresh_token_record(
+       request.refresh_token,
+       db 
+   )
+
+   refresh_token_record.revoked=True
+
+   db.commit()
+
+   return {
+       "message" : "Logged out Successfully"
+   }
+    
+
+
+        
 

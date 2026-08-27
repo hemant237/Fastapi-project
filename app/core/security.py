@@ -3,6 +3,7 @@ from fastapi.security import HTTPBearer , HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User
+from app.models.refresh_token import RefreshToken
 
 
 import os
@@ -13,10 +14,12 @@ from dotenv import load_dotenv
 from pwdlib import PasswordHash
 from datetime import datetime , timedelta , timezone
 
-
-loaded = load_dotenv()
+load_dotenv()
 
 password_hash = PasswordHash.recommended()
+def hash_refresh_token(token:str) ->str:
+    return password_hash.hash(token)
+
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 JWT_ALGORITHM = "HS256"
@@ -120,3 +123,64 @@ def create_refresh_token (user_id : int) ->str:
     return token
 
 
+def verify_refresh_token(
+    plain_token: str,
+    hashed_token: str
+) -> bool:
+    return password_hash.verify(
+        plain_token,
+        hashed_token
+    )
+
+def get_refresh_token_record(
+        token : str,
+        db : Session
+) ->RefreshToken:
+
+    try:
+        payload = jwt.decode(
+            token,
+            JWT_SECRET_KEY,
+            algorithms=[JWT_ALGORITHM]
+        )
+
+        user_id=payload.get("sub")
+        token_type=payload.get("type")
+
+        if user_id is None or token_type != "refresh":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                status="Invalid refresh token"
+            )    
+
+    except jwt.InvalidTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Invalid refresh token'
+        )    
+
+    refresh_tokens=db.query(RefreshToken).filter(RefreshToken.user_id==int(user_id)).all()
+
+    for stored_token in refresh_tokens:
+        if verify_refresh_token(
+            token,
+            refresh_tokens.token_hash
+        ):
+            if stored_token.revoked:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Refresh token has been revoked"
+                )
+
+            if stored_token.expires_at<=datetime.now(timezone.utc):
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Refresh Token has Expired"
+                )
+
+            return stored_token
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHOROZED,
+        detail="Refresh session not found"
+    )    

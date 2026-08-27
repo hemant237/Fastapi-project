@@ -12,6 +12,7 @@ from sqlalchemy import pool
 from alembic import context
 
 from app.database import Base
+from app.models import refresh_token
 
 from app.models.student import Student
 from app.models.department import Department
