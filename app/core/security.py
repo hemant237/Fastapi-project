@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User
 from app.models.refresh_token import RefreshToken
+from app.models.password_reset_token import PasswordResetToken
 
 
 import os
@@ -189,5 +190,22 @@ def get_refresh_token_record(
 
 def create_password_reset_token() ->str:
     return secrets.token_urlsafe(32)
+
+
+def get_password_reset_token_record(
+        plain_token : str,
+        db :Session
+):
+    reset_tokens=db.query(PasswordResetToken).all()
+
+    for stored_tokens in reset_tokens:
+        if verify_refresh_token(plain_token,stored_tokens.token_hash):
+            return stored_tokens
+
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid password reset token"
+    )    
 
 

@@ -3,14 +3,15 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.schemas.auth import (RegisterRequest, UserResponse ,LoginRequest , RefreshTokenRequest ,
-                               TokenResponse , AccessTokenResponse , ForgotPasswordRequest)
+                               TokenResponse , AccessTokenResponse , ForgotPasswordRequest , ResetPasswordRequest)
 
 from app.models.user import User
 from fastapi import HTTPException
 
 from app.core.security import (verify_password , hash_password , create_access_token , get_current_user ,
                                 require_admin , create_refresh_token, JWT_SECRET_KEY,JWT_ALGORITHM , hash_refresh_token,
-                                verify_refresh_token , get_refresh_token_record , create_password_reset_token)
+                                verify_refresh_token , get_refresh_token_record , create_password_reset_token , 
+                                get_password_reset_token_record)
 
 from app.models.refresh_token import RefreshToken
 from app.models.password_reset_token import PasswordResetToken
@@ -204,6 +205,45 @@ def forgot_password(
     return {
         "message" :"password reset token generated",
         "reset token": reset_token
+    }
+
+
+@router.post("/reset-password")
+def reset_password(
+    request : ResetPasswordRequest,
+    db : Session =Depends(get_db)
+):
+    matching_token=get_password_reset_token_record(request.token,db)
+
+    
+    if matching_token.used:
+        raise HTTPException (
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Reset token has already been used"
+        )
+
+    if matching_token.expires_at<=datetime.now(timezone.utc):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Reset token has expired"
+        )
+
+    user=db.get(User,matching_token.user_id)
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_UNAUTHORIZED,
+            detail="User not found"
+        )
+
+    user.password_hash=hash_password(request.new_password)
+
+    matching_token.used=True
+
+    db.commit()
+
+    return{
+        "message" : "Password Reset Successfully"
     }
 
 
