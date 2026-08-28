@@ -7,6 +7,7 @@ from app.models.refresh_token import RefreshToken
 
 
 import os
+import secrets
 
 
 import jwt
@@ -164,7 +165,7 @@ def get_refresh_token_record(
     for stored_token in refresh_tokens:
         if verify_refresh_token(
             token,
-            refresh_tokens.token_hash
+            stored_token.token_hash
         ):
             if stored_token.revoked:
                 raise HTTPException(
@@ -184,3 +185,9 @@ def get_refresh_token_record(
         status_code=status.HTTP_401_UNAUTHOROZED,
         detail="Refresh session not found"
     )    
+
+
+def create_password_reset_token() ->str:
+    return secrets.token_urlsafe(32)
+
+

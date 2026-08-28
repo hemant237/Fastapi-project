@@ -16,3 +16,18 @@ class LoginRequest(BaseModel):
 
 class RefreshTokenRequest(BaseModel):
     refresh_token : str    
+
+class TokenResponse(BaseModel):
+    access_token: str
+    refresh_token : str
+    token_type: str    
+
+class AccessTokenResponse(BaseModel):
+    access_token : str
+    token_type : str
+
+class ForgotPasswordRequest(BaseModel):
+    email : EmailStr
+
+
+    

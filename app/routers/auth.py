@@ -2,16 +2,18 @@ from fastapi import APIRouter, Depends , status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.schemas.auth import RegisterRequest, UserResponse ,LoginRequest , RefreshTokenRequest
+from app.schemas.auth import (RegisterRequest, UserResponse ,LoginRequest , RefreshTokenRequest ,
+                               TokenResponse , AccessTokenResponse , ForgotPasswordRequest)
 
 from app.models.user import User
 from fastapi import HTTPException
 
 from app.core.security import (verify_password , hash_password , create_access_token , get_current_user ,
                                 require_admin , create_refresh_token, JWT_SECRET_KEY,JWT_ALGORITHM , hash_refresh_token,
-                                verify_refresh_token , get_refresh_token_record)
+                                verify_refresh_token , get_refresh_token_record , create_password_reset_token)
 
 from app.models.refresh_token import RefreshToken
+from app.models.password_reset_token import PasswordResetToken
 
 from datetime import datetime , timedelta , timezone
 
@@ -55,7 +57,7 @@ def register(
 
     return db_user
 
-@router.post("/login")
+@router.post("/login",response_model=TokenResponse)
 def login(
     user : LoginRequest,
     db : Session = Depends(get_db)
@@ -119,21 +121,40 @@ def admin_test(
     }
 
 
-@router.post("/refresh")
+@router.post("/refresh",response_model=TokenResponse)
 def refresh_access_token(
     request : RefreshTokenRequest,
     db : Session = Depends(get_db)
 ):
-    refresh_token_record=get_refresh_token_record(
+    matching_token=get_refresh_token_record(
         request.refresh_token,
         db
-    )             
+    )      
 
-    new_access_token=create_access_token(refresh_token_record.user_id)
+    user_id=matching_token.user_id
+
+    matching_token.revoked=True
+
+    new_access_token=create_access_token(user_id) 
+    new_refresh_token=create_refresh_token(user_id)
+
+    new_refresh_token_hash=hash_refresh_token(new_refresh_token)
+
+
+    new_refresh_token_record=RefreshToken(
+        user_id=int(user_id),
+        token_hash=new_refresh_token_hash,
+        expires_at=datetime.now(timezone.utc) + timedelta(days=7),
+        revoked=False
+    )      
+
+    db.add(new_refresh_token_record)
+    db.commit()
 
     return {
         "access_token":new_access_token,
-        "token_type": "bearer"
+        "refresh_token":new_refresh_token,
+        "token_type":"bearer"
     }
 
 
@@ -156,6 +177,41 @@ def logout(
    }
     
 
+@router.post("/forgot-password")
+def forgot_password(
+    request : ForgotPasswordRequest,
+    db : Session =Depends(get_db)
+):
+    existing_users=db.query(User).filter(User.email==request.email).first()
+
+    if existing_users is None:
+        raise HTTPException(status_code=status.HTTP_404__NOT_FOUND,
+                            detail="User Not Found")
+
+    reset_token=create_password_reset_token()
+
+    reset_token_record=PasswordResetToken(
+        user_id=existing_users.id,
+        token_hash=hash_refresh_token(reset_token),
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=15),
+        used = False,
+        created_at=datetime.now(timezone.utc)
+    )
+
+    db.add(reset_token_record)
+    db.commit()
+
+    return {
+        "message" :"password reset token generated",
+        "reset token": reset_token
+    }
+
+
+
+
+
+
+    
 
         
 
