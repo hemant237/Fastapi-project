@@ -13,6 +13,8 @@ from app.core.security import (verify_password , hash_password , create_access_t
                                 verify_refresh_token , get_refresh_token_record , create_password_reset_token , 
                                 get_password_reset_token_record)
 
+from app.core.email import send_password_reset_email
+
 from app.models.refresh_token import RefreshToken
 from app.models.password_reset_token import PasswordResetToken
 
@@ -186,7 +188,7 @@ def forgot_password(
     existing_users=db.query(User).filter(User.email==request.email).first()
 
     if existing_users is None:
-        raise HTTPException(status_code=status.HTTP_404__NOT_FOUND,
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="User Not Found")
 
     reset_token=create_password_reset_token()
@@ -202,10 +204,11 @@ def forgot_password(
     db.add(reset_token_record)
     db.commit()
 
+    send_password_reset_email(existing_users.email,reset_token)
+
     return {
-        "message" :"password reset token generated",
-        "reset token": reset_token
-    }
+        "message" :"password reset email sent" 
+        }
 
 
 @router.post("/reset-password")
@@ -232,7 +235,7 @@ def reset_password(
 
     if user is None:
         raise HTTPException(
-            status_code=status.HTTP_404_UNAUTHORIZED,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
 

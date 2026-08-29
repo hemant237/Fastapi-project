@@ -152,7 +152,7 @@ def get_refresh_token_record(
         if user_id is None or token_type != "refresh":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                status="Invalid refresh token"
+                detail="Invalid refresh token"
             )    
 
     except jwt.InvalidTokenError:
