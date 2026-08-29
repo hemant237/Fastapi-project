@@ -5,6 +5,7 @@ from app.database import get_db
 from app.models.user import User
 from app.models.refresh_token import RefreshToken
 from app.models.password_reset_token import PasswordResetToken
+import uuid
 
 
 import os
@@ -114,6 +115,7 @@ def create_refresh_token (user_id : int) ->str:
     payload = {
         "sub" : str(user_id),
         "type" : "refresh",
+        "jti" : str(uuid.uuid4()),
         "exp" : expire
     }
 
