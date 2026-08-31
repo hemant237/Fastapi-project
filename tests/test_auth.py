@@ -1,6 +1,9 @@
 from fastapi.testclient import TestClient
 from app.main import app
 
+from app.core.security import create_password_reset_token , hash_password
+from app.models.password_reset_token import PasswordResetToken
+from datetime import datetime , timezone , timedelta
 client=TestClient(app)
 
 def test_register_user():
@@ -281,6 +284,102 @@ def test_admin_endpoint_without_token():
     response=client.get("/auth/admin_test")
 
     assert response.status_code == 401
+
+
+def test_forgot_password(test_user):
+    response = client.post(
+        "/auth/forgot-password",
+        json = {"email" : "loginuser@gmail.com"
+        }
+    )    
+
+    assert response.status_code == 200
+
+    data = response.json()
+    assert "message" in data
+
+def test_forgot_password_nonexistent_user():
+    response = client.post (
+        "/auth/forgot-password",
+        json = {"email" : "doesnotexist@gmail.com"}
+    )    
+
+    assert response.status_code == 404
+
+    data = response.json()
+
+    assert data["detail"] == "User Not Found"
+
+
+def test_reset_password(test_user,db):
+    reset_token = create_password_reset_token()
+
+    reset_token_record=PasswordResetToken(
+        user_id = test_user.id,
+        token_hash =hash_password(reset_token),
+        expires_at = datetime.now(timezone.utc) + timedelta(minutes=15),
+        used=False,
+        created_at= datetime.now(timezone.utc)
+    )
+
+    db.add(reset_token_record)
+    db.commit()
+
+    response = client.post(
+        "/auth/reset-password",
+        json = {"token" : reset_token,
+                   "new_password" : "password132"}
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+    assert data["message"] == "Password Reset Successfully"
+
+
+def test_reset_password_changes_login_password(test_user,db):
+    reset_token = create_password_reset_token()
+
+    reset_token_record=PasswordResetToken(
+        user_id = test_user.id,
+        token_hash=hash_password(reset_token),
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=15),
+        used=False,
+        created_at=datetime.now(timezone.utc)
+    )
+
+    db.add(reset_token_record)
+    db.commit()
+
+    response= client.post(
+        "/auth/reset-password",
+        json = {"token" : reset_token,
+                "new_password": "newpassword"}
+    )
+
+    assert response.status_code == 200
+
+    old_password_login = client.post(
+        "/auth/login",
+        json ={"email" : "loginuser@gmail.com",
+               "password" : "password123"}
+    )
+
+    assert old_password_login.status_code == 401
+
+    new_pass_login = client.post(
+        "/auth/login",
+        json = {"email" : "loginuser@gmail.com",
+                "password": "newpassword"}
+    )
+
+    assert new_pass_login.status_code == 200
+
+    data = new_pass_login.json()
+
+    assert "access_token" in data
+    assert "refresh_token" in data
+
 
 
 
