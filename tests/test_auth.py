@@ -249,6 +249,40 @@ def test_admin_endpoint_forbiddesn():
 
 
 
+def test_admin_endpoint_success(admin_user):
+    login_response=client.post(
+        "/auth/login",
+        json = {
+            "email" : "admin@gmail.com",
+            "password" : "password123"
+        }
+    )    
+
+    assert login_response.status_code==200
+
+    access_token = login_response.json()["access_token"]
+
+    response= client.get(
+        "/auth/admin_test",
+        headers = {
+            "Authorization" : f"Bearer {access_token}"
+        }
+    )
+
+    assert response.status_code==200
+
+    data = response.json()
+
+    assert data["user"] == "admin@gmail.com"
+    assert data["role"] == "admin"
+
+
+def test_admin_endpoint_without_token():
+    response=client.get("/auth/admin_test")
+
+    assert response.status_code == 401
+
+
 
 
 
