@@ -103,7 +103,7 @@ def delete_employee(
 
     if employee is None:
         raise HTTPException(
-            ststus_code=404,
+            status_code=404,
             detail="Employee NOt Found"
         )
 

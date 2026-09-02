@@ -71,7 +71,7 @@ def update_student(
 
     if existing_student is None:
         raise HTTPException(
-            ststus_code=404,
+            status_code=404,
             detail="Student not Found"
         )
 
