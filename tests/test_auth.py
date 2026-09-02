@@ -381,6 +381,112 @@ def test_reset_password_changes_login_password(test_user,db):
     assert "refresh_token" in data
 
 
+def test_reset_password_token_reuse(test_user,db):
+    reset_token = create_password_reset_token()
+
+    reset_token_record=PasswordResetToken(
+        user_id=test_user.id,
+        token_hash=hash_password(reset_token),
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=15),
+        used = False,
+        created_at= datetime.now(timezone.utc)
+    )    
+
+    db.add(reset_token_record)
+    db.commit()
+
+    first_response=client.post(
+        "/auth/reset-password",
+        json= {"token" : reset_token,
+               "new_password": "passwordnew123"}
+    )
+
+    assert first_response.status_code==200
+
+    sec_response= client.post(
+        "/auth/reset-password",
+        json = {"token" : reset_token,
+                "new_password" : "passwordnew"}
+    )
+
+    assert sec_response.status_code==401
+
+    data= sec_response.json()
+    assert data["detail"] == "Reset token has already been used"
+
+
+def test_reset_password_expired_token(test_user,db):
+    reset_token=create_password_reset_token()
+
+    reset_token_record=PasswordResetToken(
+        user_id = test_user.id,
+        token_hash=hash_password(reset_token),
+        expires_at= datetime.now(timezone.utc) - timedelta(minutes=1),
+        used=False,
+        created_at=datetime.now(timezone.utc)
+    )    
+
+    db.add(reset_token_record)
+    db.commit()
+
+    response=client.post(
+        "/auth/reset-password",
+        json = {"token" : reset_token,
+                "new_password": "password1234"}
+    )
+
+    assert response.status_code == 401
+
+    data = response.json()
+    assert data["detail"] == "Reset token has expired"
+
+
+def test_reset_password_invalid_token():
+    response= client.post(
+        "/auth/reset-password",
+        json ={"token" : "invalid-token_for_test",
+               "new_password": "password12345"}
+    )
+
+    assert response.status_code == 401
+
+    data = response.json()
+    assert data["detail"] == "Invalid password reset token"
+
+
+def test_reset_password_marks_token_as_used(test_user, db):
+    reset_token = create_password_reset_token()
+
+    reset_token_record = PasswordResetToken(
+        user_id=test_user.id,
+        token_hash=hash_password(reset_token),
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=15),
+        used=False,
+        created_at=datetime.now(timezone.utc)
+    )
+
+    db.add(reset_token_record)
+    db.commit()
+
+    response = client.post(
+        "/auth/reset-password",
+        json={
+            "token": reset_token,
+            "new_password": "newpassword123"
+        }
+    )
+
+    assert response.status_code == 200
+
+    # Refresh the database object
+    db.refresh(reset_token_record)
+
+    assert reset_token_record.used is True    
+
+
+
+
+
 
 
 
