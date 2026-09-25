@@ -34,3 +34,6 @@ build/
 
 # Logs
 *.log
+
+# Database dumps (may contain real user data)
+*.backup
