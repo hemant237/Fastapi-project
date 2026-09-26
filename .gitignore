@@ -1,13 +1,23 @@
 # Virtual environment
 .venv/
+venv/
+env/
 
 # Python cache
 __pycache__/
 *.py[cod]
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# ML training output (CatBoost writes this to the current folder)
+catboost_info/
 
 # Environment variables
 .env
 .env.*
+!.env.example
 
 # IDE
 .vscode/
@@ -24,3 +34,6 @@ build/
 
 # Logs
 *.log
+
+# Database dumps (may contain real user data)
+*.backup
