@@ -54,3 +54,6 @@ if __name__ == "__main__":
 
     print("Clusters (ours):   ", len(set(ours) - {-1}), "| noise:", (ours == -1).sum())
     print("Clusters (sklearn):", len(set(theirs) - {-1}), "| noise:", (theirs == -1).sum())
+
+    from sklearn.metrics import adjusted_rand_score
+    print("Adjusted Rand Index vs sklearn:", round(adjusted_rand_score(theirs, ours), 4))
