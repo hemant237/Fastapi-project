@@ -26,3 +26,19 @@ def dbscan(X, eps=0.5, min_samples=5):
         cluster_id += 1
 
     return labels
+
+
+def _expand_cluster(X, labels, visited, point, neighbors, cluster_id, eps, min_samples):
+    """Grow a cluster outward from a core point via density reachability."""
+    labels[point] = cluster_id
+    queue = list(neighbors)
+    while queue:
+        j = queue.pop()
+        if labels[j] == -1:
+            labels[j] = cluster_id  # core or border point joins cluster
+        if visited[j]:
+            continue
+        visited[j] = True
+        j_neighbors = region_query(X, j, eps)
+        if len(j_neighbors) >= min_samples:
+            queue.extend(j_neighbors)  # j is a core point, keep expanding
