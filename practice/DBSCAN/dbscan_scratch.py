@@ -42,3 +42,15 @@ def _expand_cluster(X, labels, visited, point, neighbors, cluster_id, eps, min_s
         j_neighbors = region_query(X, j, eps)
         if len(j_neighbors) >= min_samples:
             queue.extend(j_neighbors)  # j is a core point, keep expanding
+
+
+if __name__ == "__main__":
+    from sklearn.datasets import make_moons
+    from sklearn.cluster import DBSCAN
+
+    X, _ = make_moons(n_samples=300, noise=0.07, random_state=42)
+    ours = dbscan(X, eps=0.2, min_samples=5)
+    theirs = DBSCAN(eps=0.2, min_samples=5).fit_predict(X)
+
+    print("Clusters (ours):   ", len(set(ours) - {-1}), "| noise:", (ours == -1).sum())
+    print("Clusters (sklearn):", len(set(theirs) - {-1}), "| noise:", (theirs == -1).sum())
