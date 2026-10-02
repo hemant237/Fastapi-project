@@ -408,6 +408,51 @@ LIMIT retrieves only the required number of rows during testing, reducing execut
 Use EXPLAIN ANALYZE to understand how PostgreSQL executes the query before making optimizations.
 
 
+## DATE - 10/08/2026
+
+## What is SQLAlchemy?
+SQLAlchemy is a Python library used to interact with relational databases using Python objects and expressions instead of writing raw SQL for every operation.
+
+## ORM
+ORM = Object-Relational Mapper.
+It maps Python objects to database tables and database rows back to Python objects.
+
+## FastAPI + SQLAlchemy + PostgreSQL
+Client
+   ↓
+FastAPI
+   ↓
+SQLAlchemy
+   ↓
+PostgreSQL
+FastAPI handles API requests.
+SQLAlchemy handles database communication.
+PostgreSQL stores the data.
+
+## Basic Operations
+session.add()
+→ INSERT
+Modify object + session.commit()
+→ UPDATE
+session.delete()
+→ DELETE
+
+## SQL Injection
+SQLAlchemy uses parameterized queries/bind parameters, which helps protect against SQL injection.
+
+## Important
+SQLAlchemy does NOT replace SQL completely.
+SQL knowledge is still required for:
+- Complex queries
+- Joins
+- Performance optimization
+- Debugging
+- EXPLAIN ANALYZE
+
+
+
+
+
 
 
 
