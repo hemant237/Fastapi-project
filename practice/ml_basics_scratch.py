@@ -1,4 +1,4 @@
-"""Scratch ML basics: linear regression from scratch with NumPy."""
+"""Scratch ML basics: linear and ridge regression from scratch with NumPy."""
 import numpy as np
 
 
