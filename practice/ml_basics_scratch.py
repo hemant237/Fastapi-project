@@ -59,3 +59,21 @@ def normal_equation(X, y):
     """Closed-form solution: theta = (X^T X)^-1 X^T y."""
     Xb = np.c_[np.ones(len(X)), X]
     return np.linalg.pinv(Xb.T @ Xb) @ Xb.T @ y
+
+
+class RidgeRegressionGD(LinearRegressionGD):
+    """Linear regression with L2 regularization."""
+
+    def __init__(self, alpha=0.1, **kwargs):
+        super().__init__(**kwargs)
+        self.alpha = alpha
+
+    def fit(self, X, y):
+        n, d = X.shape
+        self.w = np.zeros(d)
+        self.b = 0.0
+        for _ in range(self.epochs):
+            err = X @ self.w + self.b - y
+            self.w -= self.lr * ((2 / n) * (X.T @ err) + 2 * self.alpha * self.w)
+            self.b -= self.lr * (2 / n) * err.sum()
+        return self
