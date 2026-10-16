@@ -38,3 +38,15 @@ class LinearRegressionGD:
     def __init__(self, lr=0.05, epochs=500):
         self.lr = lr
         self.epochs = epochs
+
+    def fit(self, X, y):
+        n, d = X.shape
+        self.w = np.zeros(d)
+        self.b = 0.0
+        self.history = []
+        for _ in range(self.epochs):
+            err = X @ self.w + self.b - y
+            self.w -= self.lr * (2 / n) * (X.T @ err)
+            self.b -= self.lr * (2 / n) * err.sum()
+            self.history.append(np.mean(err ** 2))
+        return self
