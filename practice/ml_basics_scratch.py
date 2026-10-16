@@ -50,3 +50,6 @@ class LinearRegressionGD:
             self.b -= self.lr * (2 / n) * err.sum()
             self.history.append(np.mean(err ** 2))
         return self
+
+    def predict(self, X):
+        return X @ self.w + self.b
