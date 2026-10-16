@@ -77,3 +77,15 @@ class RidgeRegressionGD(LinearRegressionGD):
             self.w -= self.lr * ((2 / n) * (X.T @ err) + 2 * self.alpha * self.w)
             self.b -= self.lr * (2 / n) * err.sum()
         return self
+
+
+if __name__ == "__main__":
+    X, y = make_data()
+    X_tr, X_te, y_tr, y_te = train_test_split(X, y)
+    X_tr, X_te = standardize(X_tr, X_te)
+    for model in (LinearRegressionGD(), RidgeRegressionGD(alpha=0.01)):
+        model.fit(X_tr, y_tr)
+        pred = model.predict(X_te)
+        print(type(model).__name__, "MSE:", round(mse(y_te, pred), 3),
+              "R2:", round(r2_score(y_te, pred), 3))
+    print("Normal equation theta:", normal_equation(X_tr, y_tr))
