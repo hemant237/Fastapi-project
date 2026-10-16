@@ -20,3 +20,13 @@ def train_test_split(X, y, test_size=0.2, seed=0):
 def standardize(X_train, X_test):
     mu, sigma = X_train.mean(axis=0), X_train.std(axis=0)
     return (X_train - mu) / sigma, (X_test - mu) / sigma
+
+
+def mse(y_true, y_pred):
+    return np.mean((y_true - y_pred) ** 2)
+
+
+def r2_score(y_true, y_pred):
+    ss_res = np.sum((y_true - y_pred) ** 2)
+    ss_tot = np.sum((y_true - y_true.mean()) ** 2)
+    return 1 - ss_res / ss_tot
