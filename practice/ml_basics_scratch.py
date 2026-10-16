@@ -15,3 +15,8 @@ def train_test_split(X, y, test_size=0.2, seed=0):
     idx = rng.permutation(len(X))
     cut = int(len(X) * (1 - test_size))
     return X[idx[:cut]], X[idx[cut:]], y[idx[:cut]], y[idx[cut:]]
+
+
+def standardize(X_train, X_test):
+    mu, sigma = X_train.mean(axis=0), X_train.std(axis=0)
+    return (X_train - mu) / sigma, (X_test - mu) / sigma
