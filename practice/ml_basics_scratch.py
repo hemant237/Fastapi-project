@@ -30,3 +30,11 @@ def r2_score(y_true, y_pred):
     ss_res = np.sum((y_true - y_pred) ** 2)
     ss_tot = np.sum((y_true - y_true.mean()) ** 2)
     return 1 - ss_res / ss_tot
+
+
+class LinearRegressionGD:
+    """Linear regression trained with batch gradient descent."""
+
+    def __init__(self, lr=0.05, epochs=500):
+        self.lr = lr
+        self.epochs = epochs
