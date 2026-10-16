@@ -53,3 +53,9 @@ class LinearRegressionGD:
 
     def predict(self, X):
         return X @ self.w + self.b
+
+
+def normal_equation(X, y):
+    """Closed-form solution: theta = (X^T X)^-1 X^T y."""
+    Xb = np.c_[np.ones(len(X)), X]
+    return np.linalg.pinv(Xb.T @ Xb) @ Xb.T @ y
