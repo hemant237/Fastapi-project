@@ -68,3 +68,10 @@ class KNNClassifier:
         d = np.linalg.norm(X[:, None, :] - self.X[None, :, :], axis=2)
         nearest = np.argsort(d, axis=1)[:, : self.k]
         return np.array([np.bincount(self.y[row]).argmax() for row in nearest])
+
+
+def confusion_matrix(y_true, y_pred):
+    cm = np.zeros((2, 2), dtype=int)
+    for t, p in zip(y_true, y_pred):
+        cm[t, p] += 1
+    return cm
