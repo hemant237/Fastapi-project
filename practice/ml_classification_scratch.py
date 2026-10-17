@@ -9,3 +9,10 @@ def make_blobs(n=200, seed=0):
     X = np.vstack([X0, X1])
     y = np.array([0] * (n // 2) + [1] * (n // 2))
     return X, y
+
+
+def train_test_split(X, y, test_size=0.25, seed=0):
+    rng = np.random.default_rng(seed)
+    idx = rng.permutation(len(X))
+    cut = int(len(X) * (1 - test_size))
+    return X[idx[:cut]], X[idx[cut:]], y[idx[:cut]], y[idx[cut:]]
