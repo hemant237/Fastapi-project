@@ -75,3 +75,12 @@ def confusion_matrix(y_true, y_pred):
     for t, p in zip(y_true, y_pred):
         cm[t, p] += 1
     return cm
+
+
+if __name__ == "__main__":
+    X, y = make_blobs()
+    X_tr, X_te, y_tr, y_te = train_test_split(X, y)
+    for name, model in [("LogReg", LogisticRegressionGD()), ("KNN", KNNClassifier())]:
+        pred = model.fit(X_tr, y_tr).predict(X_te)
+        print(f"{name}: acc={accuracy(y_te, pred):.3f}")
+        print(confusion_matrix(y_te, pred))
