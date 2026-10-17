@@ -38,3 +38,13 @@ class LogisticRegressionGD:
         self.w = None
         self.b = 0.0
         self.losses = []
+
+    def fit(self, X, y):
+        self.w = np.zeros(X.shape[1])
+        for _ in range(self.epochs):
+            p = sigmoid(X @ self.w + self.b)
+            grad = p - y
+            self.w -= self.lr * (X.T @ grad) / len(X)
+            self.b -= self.lr * grad.mean()
+            self.losses.append(binary_cross_entropy(y, p))
+        return self
