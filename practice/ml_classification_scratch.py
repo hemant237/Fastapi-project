@@ -54,3 +54,17 @@ class LogisticRegressionGD:
 
     def predict(self, X, threshold=0.5):
         return (self.predict_proba(X) >= threshold).astype(int)
+
+
+class KNNClassifier:
+    def __init__(self, k=5):
+        self.k = k
+
+    def fit(self, X, y):
+        self.X, self.y = X, y
+        return self
+
+    def predict(self, X):
+        d = np.linalg.norm(X[:, None, :] - self.X[None, :, :], axis=2)
+        nearest = np.argsort(d, axis=1)[:, : self.k]
+        return np.array([np.bincount(self.y[row]).argmax() for row in nearest])
