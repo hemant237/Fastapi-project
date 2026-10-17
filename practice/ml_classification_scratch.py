@@ -48,3 +48,9 @@ class LogisticRegressionGD:
             self.b -= self.lr * grad.mean()
             self.losses.append(binary_cross_entropy(y, p))
         return self
+
+    def predict_proba(self, X):
+        return sigmoid(X @ self.w + self.b)
+
+    def predict(self, X, threshold=0.5):
+        return (self.predict_proba(X) >= threshold).astype(int)
