@@ -20,3 +20,12 @@ def train_test_split(X, y, test_size=0.25, seed=0):
 
 def sigmoid(z):
     return 1.0 / (1.0 + np.exp(-z))
+
+
+def accuracy(y_true, y_pred):
+    return float(np.mean(y_true == y_pred))
+
+
+def binary_cross_entropy(y_true, p, eps=1e-12):
+    p = np.clip(p, eps, 1 - eps)
+    return float(-np.mean(y_true * np.log(p) + (1 - y_true) * np.log(1 - p)))
