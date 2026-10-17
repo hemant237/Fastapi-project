@@ -1,4 +1,4 @@
-"""Classification basics from scratch: logistic regression and KNN."""
+"""Binary classification from scratch: logistic regression vs. KNN."""
 import numpy as np
 
 
