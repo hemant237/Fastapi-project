@@ -74,3 +74,11 @@ def silhouette_score(X, labels):
         b = min(D[i, labels == c].mean() for c in np.unique(labels) if c != labels[i])
         scores.append((b - a) / max(a, b))
     return float(np.mean(scores))
+
+
+class PCA:
+    def __init__(self, n_components=2):
+        self.n_components = n_components
+        self.mean_ = None
+        self.components_ = None
+        self.explained_variance_ratio_ = None
