@@ -99,3 +99,14 @@ class PCA:
 
     def inverse_transform(self, Z):
         return Z @ self.components_ + self.mean_
+
+
+if __name__ == "__main__":
+    X, y = make_clusters()
+    Xs = standardize(X)
+    km = KMeans(k=3).fit(Xs)
+    print("inertia:", round(km.inertia_, 2))
+    print("silhouette:", round(silhouette_score(Xs, km.labels_), 3))
+    print("elbow:", {k: round(v, 1) for k, v in elbow(Xs).items()})
+    pca = PCA(n_components=1).fit(Xs)
+    print("PCA explained variance:", pca.explained_variance_ratio_.round(3))
