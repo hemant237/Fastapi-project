@@ -37,3 +37,9 @@ class KMeans:
 
     def _assign(self, X):
         return pairwise_sq_dist(X, self.centroids).argmin(axis=1)
+
+    def _update(self, X, labels):
+        return np.array([
+            X[labels == j].mean(axis=0) if np.any(labels == j) else self.centroids[j]
+            for j in range(self.k)
+        ])
