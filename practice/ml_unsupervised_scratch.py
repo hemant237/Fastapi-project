@@ -82,3 +82,14 @@ class PCA:
         self.mean_ = None
         self.components_ = None
         self.explained_variance_ratio_ = None
+
+    def fit(self, X):
+        self.mean_ = X.mean(axis=0)
+        Xc = X - self.mean_
+        cov = np.cov(Xc, rowvar=False)
+        vals, vecs = np.linalg.eigh(cov)
+        order = np.argsort(vals)[::-1]
+        vals, vecs = vals[order], vecs[:, order]
+        self.components_ = vecs[:, : self.n_components].T
+        self.explained_variance_ratio_ = vals[: self.n_components] / vals.sum()
+        return self
