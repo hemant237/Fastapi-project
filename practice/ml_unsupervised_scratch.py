@@ -63,3 +63,14 @@ class KMeans:
 
 def elbow(X, ks=range(1, 8)):
     return {k: KMeans(k=k).fit(X).inertia_ for k in ks}
+
+
+def silhouette_score(X, labels):
+    D = np.sqrt(pairwise_sq_dist(X, X))
+    scores = []
+    for i in range(len(X)):
+        same = labels == labels[i]
+        a = D[i, same].sum() / max(same.sum() - 1, 1)
+        b = min(D[i, labels == c].mean() for c in np.unique(labels) if c != labels[i])
+        scores.append((b - a) / max(a, b))
+    return float(np.mean(scores))
