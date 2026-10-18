@@ -34,3 +34,6 @@ class KMeans:
             d = pairwise_sq_dist(X, np.array(centroids)).min(axis=1)
             centroids.append(X[rng.choice(len(X), p=d / d.sum())])
         return np.array(centroids)
+
+    def _assign(self, X):
+        return pairwise_sq_dist(X, self.centroids).argmin(axis=1)
