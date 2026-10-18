@@ -26,3 +26,11 @@ class KMeans:
         self.seed = seed
         self.centroids = None
         self.inertia_ = None
+
+    def _init_centroids(self, X):
+        rng = np.random.default_rng(self.seed)
+        centroids = [X[rng.integers(len(X))]]
+        for _ in range(1, self.k):
+            d = pairwise_sq_dist(X, np.array(centroids)).min(axis=1)
+            centroids.append(X[rng.choice(len(X), p=d / d.sum())])
+        return np.array(centroids)
