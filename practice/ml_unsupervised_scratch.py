@@ -93,3 +93,9 @@ class PCA:
         self.components_ = vecs[:, : self.n_components].T
         self.explained_variance_ratio_ = vals[: self.n_components] / vals.sum()
         return self
+
+    def transform(self, X):
+        return (X - self.mean_) @ self.components_.T
+
+    def inverse_transform(self, Z):
+        return Z @ self.components_ + self.mean_
