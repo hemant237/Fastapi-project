@@ -43,3 +43,19 @@ class KMeans:
             X[labels == j].mean(axis=0) if np.any(labels == j) else self.centroids[j]
             for j in range(self.k)
         ])
+
+    def fit(self, X):
+        self.centroids = self._init_centroids(X)
+        for _ in range(self.max_iter):
+            labels = self._assign(X)
+            new = self._update(X, labels)
+            shift = np.linalg.norm(new - self.centroids)
+            self.centroids = new
+            if shift < self.tol:
+                break
+        self.labels_ = self._assign(X)
+        self.inertia_ = float(pairwise_sq_dist(X, self.centroids).min(axis=1).sum())
+        return self
+
+    def predict(self, X):
+        return self._assign(X)
