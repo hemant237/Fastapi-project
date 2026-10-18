@@ -59,3 +59,7 @@ class KMeans:
 
     def predict(self, X):
         return self._assign(X)
+
+
+def elbow(X, ks=range(1, 8)):
+    return {k: KMeans(k=k).fit(X).inertia_ for k in ks}
