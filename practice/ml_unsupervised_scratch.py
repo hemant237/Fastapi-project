@@ -16,3 +16,13 @@ def standardize(X):
 
 def pairwise_sq_dist(A, B):
     return ((A[:, None, :] - B[None, :, :]) ** 2).sum(axis=2)
+
+
+class KMeans:
+    def __init__(self, k=3, max_iter=100, tol=1e-6, seed=0):
+        self.k = k
+        self.max_iter = max_iter
+        self.tol = tol
+        self.seed = seed
+        self.centroids = None
+        self.inertia_ = None
