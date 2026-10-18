@@ -1,4 +1,4 @@
-"""Unsupervised learning from scratch: k-means and PCA."""
+"""Unsupervised learning from scratch: k-means clustering and PCA."""
 import numpy as np
 
 
