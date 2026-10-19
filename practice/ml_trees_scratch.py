@@ -36,3 +36,11 @@ def entropy(y):
     p = np.bincount(y) / len(y)
     p = p[p > 0]
     return float(-np.sum(p * np.log2(p)))
+
+
+def information_gain(y, left_mask, impurity=gini):
+    n, n_l = len(y), left_mask.sum()
+    if n_l == 0 or n_l == n:
+        return 0.0
+    child = (n_l * impurity(y[left_mask]) + (n - n_l) * impurity(y[~left_mask])) / n
+    return impurity(y) - child
