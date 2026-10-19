@@ -131,3 +131,7 @@ class RandomForestClassifier:
                                           seed=int(self.rng.integers(1e9)))
             self.trees.append(tree.fit(Xb, yb))
         return self
+
+    def predict(self, X):
+        votes = np.array([t.predict(X) for t in self.trees])
+        return np.array([np.bincount(col).argmax() for col in votes.T])
