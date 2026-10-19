@@ -102,3 +102,9 @@ class DecisionTreeClassifier:
 
     def predict(self, X):
         return np.array([self._walk(x, self.root) for x in X])
+
+    def depth(self, node=None):
+        node = node or self.root
+        if node.is_leaf():
+            return 0
+        return 1 + max(self.depth(node.left), self.depth(node.right))
