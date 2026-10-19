@@ -94,3 +94,11 @@ class DecisionTreeClassifier:
     def fit(self, X, y):
         self.root = self._grow(X, y, 0)
         return self
+
+    def _walk(self, x, node):
+        while not node.is_leaf():
+            node = node.left if x[node.feature] <= node.threshold else node.right
+        return node.value
+
+    def predict(self, X):
+        return np.array([self._walk(x, self.root) for x in X])
