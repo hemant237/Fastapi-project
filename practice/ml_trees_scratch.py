@@ -28,3 +28,11 @@ def gini(y):
         return 0.0
     p = np.bincount(y) / len(y)
     return float(1 - np.sum(p ** 2))
+
+
+def entropy(y):
+    if len(y) == 0:
+        return 0.0
+    p = np.bincount(y) / len(y)
+    p = p[p > 0]
+    return float(-np.sum(p * np.log2(p)))
