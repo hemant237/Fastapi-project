@@ -21,3 +21,10 @@ def train_test_split(X, y, test_size=0.25, seed=0):
 
 def accuracy(y_true, y_pred):
     return float(np.mean(y_true == y_pred))
+
+
+def gini(y):
+    if len(y) == 0:
+        return 0.0
+    p = np.bincount(y) / len(y)
+    return float(1 - np.sum(p ** 2))
