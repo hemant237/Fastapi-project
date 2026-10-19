@@ -90,3 +90,7 @@ class DecisionTreeClassifier:
         mask = X[:, f] <= t
         return Node(f, t, self._grow(X[mask], y[mask], depth + 1),
                     self._grow(X[~mask], y[~mask], depth + 1))
+
+    def fit(self, X, y):
+        self.root = self._grow(X, y, 0)
+        return self
