@@ -1,4 +1,4 @@
-"""Tree-based models from scratch: decision tree and random forest."""
+"""Decision tree and random forest classifiers implemented from scratch."""
 import numpy as np
 
 
