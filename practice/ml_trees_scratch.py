@@ -79,3 +79,14 @@ class DecisionTreeClassifier:
                 if gain > best[2]:
                     best = (f, t, gain)
         return best
+
+    def _grow(self, X, y, depth):
+        if (depth >= self.max_depth or len(y) < self.min_samples_split
+                or len(np.unique(y)) == 1):
+            return Node(value=int(np.bincount(y).argmax()))
+        f, t, gain = self._best_split(X, y)
+        if f is None:
+            return Node(value=int(np.bincount(y).argmax()))
+        mask = X[:, f] <= t
+        return Node(f, t, self._grow(X[mask], y[mask], depth + 1),
+                    self._grow(X[~mask], y[~mask], depth + 1))
