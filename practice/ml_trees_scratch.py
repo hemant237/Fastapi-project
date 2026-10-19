@@ -135,3 +135,12 @@ class RandomForestClassifier:
     def predict(self, X):
         votes = np.array([t.predict(X) for t in self.trees])
         return np.array([np.bincount(col).argmax() for col in votes.T])
+
+
+if __name__ == "__main__":
+    X, y = make_moons()
+    X_tr, X_te, y_tr, y_te = train_test_split(X, y)
+    tree = DecisionTreeClassifier(max_depth=6, seed=0).fit(X_tr, y_tr)
+    forest = RandomForestClassifier().fit(X_tr, y_tr)
+    print(f"Tree   (depth {tree.depth()}): acc={accuracy(y_te, tree.predict(X_te)):.3f}")
+    print(f"Forest ({forest.n_trees} trees): acc={accuracy(y_te, forest.predict(X_te)):.3f}")
