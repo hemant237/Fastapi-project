@@ -56,3 +56,14 @@ class Node:
 
     def is_leaf(self):
         return self.value is not None
+
+
+class DecisionTreeClassifier:
+    def __init__(self, max_depth=5, min_samples_split=2, max_features=None,
+                 criterion="gini", seed=None):
+        self.max_depth = max_depth
+        self.min_samples_split = min_samples_split
+        self.max_features = max_features
+        self.impurity = gini if criterion == "gini" else entropy
+        self.rng = np.random.default_rng(seed)
+        self.root = None
