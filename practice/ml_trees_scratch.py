@@ -108,3 +108,8 @@ class DecisionTreeClassifier:
         if node.is_leaf():
             return 0
         return 1 + max(self.depth(node.left), self.depth(node.right))
+
+
+def bootstrap_sample(X, y, rng):
+    idx = rng.integers(0, len(X), len(X))
+    return X[idx], y[idx]
