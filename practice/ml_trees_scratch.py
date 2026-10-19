@@ -67,3 +67,15 @@ class DecisionTreeClassifier:
         self.impurity = gini if criterion == "gini" else entropy
         self.rng = np.random.default_rng(seed)
         self.root = None
+
+    def _best_split(self, X, y):
+        n_feat = X.shape[1]
+        k = self.max_features or n_feat
+        features = self.rng.choice(n_feat, size=k, replace=False)
+        best = (None, None, 0.0)
+        for f in features:
+            for t in np.unique(X[:, f]):
+                gain = information_gain(y, X[:, f] <= t, self.impurity)
+                if gain > best[2]:
+                    best = (f, t, gain)
+        return best
