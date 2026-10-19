@@ -17,3 +17,7 @@ def train_test_split(X, y, test_size=0.25, seed=0):
     idx = rng.permutation(len(X))
     cut = int(len(X) * (1 - test_size))
     return X[idx[:cut]], X[idx[cut:]], y[idx[:cut]], y[idx[cut:]]
+
+
+def accuracy(y_true, y_pred):
+    return float(np.mean(y_true == y_pred))
