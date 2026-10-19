@@ -113,3 +113,21 @@ class DecisionTreeClassifier:
 def bootstrap_sample(X, y, rng):
     idx = rng.integers(0, len(X), len(X))
     return X[idx], y[idx]
+
+
+class RandomForestClassifier:
+    def __init__(self, n_trees=25, max_depth=6, max_features=1, seed=0):
+        self.n_trees = n_trees
+        self.max_depth = max_depth
+        self.max_features = max_features
+        self.rng = np.random.default_rng(seed)
+        self.trees = []
+
+    def fit(self, X, y):
+        self.trees = []
+        for _ in range(self.n_trees):
+            Xb, yb = bootstrap_sample(X, y, self.rng)
+            tree = DecisionTreeClassifier(self.max_depth, max_features=self.max_features,
+                                          seed=int(self.rng.integers(1e9)))
+            self.trees.append(tree.fit(Xb, yb))
+        return self
