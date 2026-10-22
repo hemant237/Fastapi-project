@@ -1,0 +1,19 @@
+@"
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Dataset and generated output
+train.csv
+test.csv
+test_predictions.csv
+sample_submission.csv
+
+# Secrets
+.env
+"@ | Set-Content .gitignore
